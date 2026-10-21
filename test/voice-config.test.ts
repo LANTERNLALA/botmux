@@ -34,8 +34,8 @@ describe('Volcengine credentials', () => {
     else expect(result).toBeNull();
   });
 
-  it.each([null, [], true, 1, 'standard', { mode: '' }, { mode: null }, { mode: 'STANDARD' },
-    { mode: 'typo' }, { apiKey: 1 }, { apiKey: null }, { apiKey: 'key\ninjected' }])('keeps malformed blocks disabled, row %#', (raw) => {
+  it.each([[null], [[]], [true], [1], ['standard'], [{ mode: '' }], [{ mode: null }], [{ mode: 'STANDARD' }],
+    [{ mode: 'typo' }], [{ apiKey: 1 }], [{ apiKey: null }], [{ apiKey: 'key\ninjected' }]])('keeps malformed blocks disabled, row %#', (raw) => {
     expect(parseVolcengineConfig(raw)).toBeNull();
     expect(evaluateVoiceConfig({ engine: 'volcengine', volcengine: standard }, {
       volcengine: parseVolcengineConfig(raw),
