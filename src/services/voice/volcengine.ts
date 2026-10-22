@@ -93,7 +93,7 @@ function parsePcm(body: Uint8Array): Pcm {
       pcmBytes += size;
       audio.push(decoded);
     } else {
-      throw new VolcengineError(`Volcengine TTS business code ${record.code}`);
+      throw new VolcengineError(`火山引擎语音合成返回业务错误（Volcengine TTS business code ${record.code}）`);
     }
   }
   if (start !== -1 || !completed) throw new VolcengineError('Volcengine TTS incomplete response');
@@ -155,7 +155,7 @@ export async function volcengineSynthesizePcm(
     }), deadline]);
     if (!response.ok) {
       void response.body?.cancel().catch(() => {});
-      throw new VolcengineError(`Volcengine TTS HTTP ${response.status}`);
+      throw new VolcengineError(`火山引擎语音合成请求失败（Volcengine TTS HTTP ${response.status}）`);
     }
     if (!response.body) throw new VolcengineError('Volcengine TTS missing response body');
     reader = response.body.getReader();

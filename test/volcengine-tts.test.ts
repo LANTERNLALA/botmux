@@ -115,6 +115,14 @@ describe('Volcengine response framing', () => {
     reply('{"code":0,"data":"AQ=="}{"code":0,"data":"Ag=="}' + end);
     expect((await volcengineSynthesizePcm(cfg, 'hi', opts)).data).toEqual(Buffer.from([1, 2]));
   });
+  it('rejects a business error before completion without returning partial audio or exposing provider messages', async () => {
+    const fetcher = reply(audio + '{"code":42,"message":"KEY_CANARY TEXT_CANARY"}' + end);
+    const synthesis = volcengineSynthesizePcm(cfg, 'TEXT_CANARY', opts);
+    await expect(synthesis).rejects.toThrow(/Volcengine TTS business code 42/);
+    await expect(synthesis).rejects.toThrow(/^火山引擎语音合成返回业务错误/);
+    await expect(synthesis).rejects.not.toThrow(/KEY_CANARY|TEXT_CANARY/);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it.each([
     '', audio, end, complete + end, complete + audio, complete + '{"code":42}',
     audio + '{"code":20000000,"data":"AQI="}', audio + '{"code":20000000,"data":1}',
@@ -173,7 +181,7 @@ describe('Volcengine limits and safe transport errors', () => {
     const text = vi.spyOn(response, 'text');
     const fetcher = vi.fn(async () => response);
     vi.stubGlobal('fetch', fetcher);
-    await expect(volcengineSynthesizePcm({ ...cfg, mode: 'agent-plan' }, 'TEXT_CANARY', opts)).rejects.toThrow(/^Volcengine TTS HTTP 403$/);
+    await expect(volcengineSynthesizePcm({ ...cfg, mode: 'agent-plan' }, 'TEXT_CANARY', opts)).rejects.toThrow(/^火山引擎语音合成请求失败（Volcengine TTS HTTP 403）$/);
     expect(text).not.toHaveBeenCalled();
     expect(cancel).toHaveBeenCalled();
     expect(fetcher).toHaveBeenCalledTimes(1);
